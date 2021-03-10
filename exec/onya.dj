@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+# -*- mode: python -*-
+# -*- coding: utf-8 -*-
+# onya.dj
+
+'''
+Parse files in a Serato crates library
+
+Sample usage:
+
+onya.dj index Music/_Serato_/Subcrates/
+onya.dj ls Music/_Serato_/Subcrates/Chunes.crate
+'''
+
+import sys
+# import logging
+# import warnings
+from pathlib import Path
+
+import click
+
+from onya.dj.serial.serato import crate
+
+@click.group()
+# @click.option('--imp', multiple=True,
+#     help='Module to be imported in order to access pipeline implementation')
+# @click.option('--out', type=click.File('w'),
+#     help='Output file of Z WebPub JSON object (form feed concatenated)')
+# @click.option('--batch-size', type=int, default=0,
+#     help='Allows you to break processing of large input CSVs into chunks of the given size')
+# @click.option('--debug', is_flag=True,
+#     help='Output additional debugging info to stderr.')
+@click.pass_context
+def main(ctx):
+    # ctx.obj.update({1: 2})
+    return
+
+@main.command('index')
+@click.argument('root', type=click.Path(exists=True))
+@click.pass_context
+def index(ctx, root):
+    'Write out an index of all contents from a folder of crates'
+    for ix, fname in enumerate(Path(root).glob('*.crate')):
+        print('Processing: ', fname)
+        # breakpoint()
+        cr = crate()
+        # c.load(str(Path.home() / Path('Music/_Serato_/Subcrates/Incoming%%Sounds.crate')))
+        cr.load(fname)
+        # Just do two, for now
+        if ix > 4: break
+
+
+if __name__ == '__main__':
+    main(obj={})
