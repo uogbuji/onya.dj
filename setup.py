@@ -26,7 +26,7 @@ PROJECT_AUTHOR = 'Uche Ogbuji'
 PROJECT_AUTHOR_EMAIL = 'uche@ogbuji.net'
 PROJECT_URL = 'https://github.com/uogbuji/onya.dj'
 PACKAGE_DIR = {'onya': 'pylib'}
-PACKAGES = ['onya.dj', 'onya.dj.serial']
+PACKAGES = ['onya.dj', 'onya.dj.serial', 'onya.etc']
 SCRIPTS = [
         'exec/onya.dj',
 ]
