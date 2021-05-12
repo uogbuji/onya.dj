@@ -33,9 +33,10 @@ class parseable_bytestream:
 
     def consume(self, pat, maxlength=0, strict=False):
         '''
-        Consume the pattern (bytes regex or plain bytes for ) pat at the point
-        of the stream make sure the bytes buffer being checked is at least as
-        long as maxlength. pat can be a simple bytestring, for convenience.
+        Consume the pattern (bytes regex or plain bytes for convenience) pat
+        at the point of the stream make sure the bytes buffer being checked
+        is at least as long as maxlength. pat can be a simple bytestring,
+        for convenience.
 
         If the pattern is matched at the point, return the matching bytes
         and move the point immediately past them, otherwise leave the point
@@ -174,5 +175,133 @@ class parseable_bytestream:
         Return a True if there is no more to process in the buffer or the file epointer
         '''
         return self._fully_read and not self._buffer
+
+
+class parseable_bytebuffer:
+    '''
+    Fully loaded buffer with interface to match parseable_bytestream
+    '''
+    def __init__(self, s):
+        self._s = s
+        self._context_sizing = 16
+        self._index = 0
+
+    def consume(self, pat, maxlength=0, strict=False):
+        '''
+        Consume the pattern (bytes regex or plain bytes for convenience)
+        pat at the point of the stream make sure the bytes buffer being
+        checked is at least as long as maxlength. pat can be a simple bytestring,
+        for convenience.
+
+        If the pattern is matched at the point, return the matching bytes
+        and move the point immediately past them, otherwise leave the point
+        unchanged
+
+        If strict is true and the pattern can't be matched at the point, raise ValueError,
+        otherwise leave the point unchanged
+
+        maxlength is ignored
+
+        >>> import re, io
+        >>> s = parseable_bytebuffer(b'abcdefghijklmnopqrstuvwxyz')
+        >>> pat = re.compile(rb'abc')
+        >>> t = s.consume(pat)
+        >>> t
+        ... b'abc'
+        >>> pat = re.compile(rb'def')
+        >>> t = s.consume(pat, strict=True)
+        ... b'def'
+        '''
+        # matched, lm = None, 0
+        if isinstance(pat, re.Pattern):
+            m = pat.match(self._s)
+            if m:
+                matched = m.group(0)
+                lm = len(matched)
+                m = True
+        else:
+            m = self._s[:len(pat)] == pat
+            lm = len(pat)
+            matched = pat
+
+        if m:
+            self._index += lm
+            return matched
+        elif strict:
+            raise ValueError(f'Required data {pat} not found at position {self._index}')
+        else:
+            return b''
+
+    def consume_len(self, nbytes, strict=False):
+        '''
+        Return bytes number of bytes at the point of the buffer,
+        and move the point immediately past them
+
+        If strict is true and there are not enough bytes left in the buffer,
+        raise ValueError and leave the point unchanged
+        '''
+        if (len(self._s) - self._index < nbytes):
+            if strict:
+                raise ValueError(
+                    f'{nbytes} bytes required but only {len(self._s)} remain. Context: {self.context}'
+                    )
+            return b''
+        else:
+            new_index = self._index + nbytes
+            retval = self._s[self._index:new_index]
+            self._index = new_index
+            return retval
+
+    def lookahead(self, nbytes, strict=False):
+        '''
+        Return bytes number of bytes at the point of the stream,
+        but do not move the point
+
+        If strict is true and there are not enough bytes left in the stream,
+        raise ValueError and leave the point unchanged
+        '''
+        if (len(self._buffer) - self._index < nbytes):
+            if strict:
+                raise ValueError(
+                    f'{nbytes} bytes required but only {len(self._buffer)} remain. Context: {self.context}'
+                    )
+            return self._s[self._index:]
+        else:
+            retval = self._s[self._index:self._index + nbytes]
+            return retval
+
+    def consume_until(self, pat, maxlength=0, strict=False):
+        '''
+        Consume the pattern (bytes regex) pat at the point of the stream
+        Make sure the bytes buffer being checked is at least as long as
+        maxlength
+
+        If the pattern is matched at the point, return the matching bytes
+        and move the point immediately past them, otherwise leave the point
+        unchanged
+
+        If strict is true and the pattern can't be matched at the point, raise ValueError,
+        otherwise leave the point unchanged        
+        '''
+        pass
+
+    @property
+    def context(self):
+        '''
+        Return a string representation of the current context, for debugging,
+        based on self._context_sizing bytes either side of self._s[0]
+        '''
+        # FIXME: Guard against cases where self._s isn't at least
+        # self._context_sizing long, but could be
+        return ''.join((self._s[:self._index].hex(' '),
+                        ' ^ ',
+                        self._s[self._index:][:self._context_sizing].hex(' ')))
+
+    @property
+    def exhausted(self):
+        '''
+        For compatability. Always return False.
+        '''
+        return False
 
 

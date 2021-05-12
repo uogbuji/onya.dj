@@ -19,7 +19,7 @@ from pathlib import Path
 
 import click
 
-from onya.dj.serial.serato import crate
+from onya.dj.serial.serato import crate, db
 
 @click.group()
 # @click.option('--imp', multiple=True,
@@ -48,6 +48,24 @@ def index(ctx, root):
         cr.load(fname)
         # Just do two, for now
         if ix > 4: break
+
+
+@main.command('readdb')
+@click.argument('dbfile', type=click.Path(exists=True))
+@click.pass_context
+def index(ctx, dbfile):
+    'Write out an index of all DB contents'
+    print('Processing: ', dbfile)
+    # breakpoint()
+    sdb = db()
+    # c.load(str(Path.home() / Path('Music/_Serato_/database\ V2')))
+    sdb.load(dbfile)
+    print(len(sdb.tracks))
+    for t in sdb.tracks:
+        try:
+            print(str(t))
+        except KeyError:
+            print('Missing expected fields in', t)
 
 
 if __name__ == '__main__':
