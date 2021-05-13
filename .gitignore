@@ -8,6 +8,10 @@ MANIFEST
 
 *.py[cod]
 
+# Mac OS X
+
+.DS_Store
+
 # C extensions
 *.so
 

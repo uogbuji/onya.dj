@@ -1,0 +1,9 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+    onya.dj.notebook:
+        image: onya-dj-notebook:v0.0.1
+        build:
+          context: ./
+          dockerfile: ./notebook/Dockerfile
