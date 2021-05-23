@@ -1,0 +1,17 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  onya.dj.notebook:
+    container_name: onya-dj-notebook
+    image: onya-dj-notebook:v0.0.1
+    environment:
+        - SDB=${SDB}
+        - JUPYTER_TOKEN=${JUPYTER_TOKEN}
+    build:
+      context: ./
+      dockerfile: ./notebook/Dockerfile
+    ports: # host:container
+      - "8888:8888"
+    volumes:
+      - ${SDB}:/sdb:ro
