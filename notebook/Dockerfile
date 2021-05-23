@@ -24,5 +24,5 @@ WORKDIR /
 
 #ENV port 8888
 #CMD ["jupyter", "notebook", "--port=${port}", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
-CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
+CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root", "--NotebookApp.token=''", "--NotebookApp.password=''"]
 
